@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import { Space, Card} from 'antd';
-import { Popover , Modal , Button } from 'antd';
+import {  Modal , Button } from 'antd';
 import { Input , Checkbox } from 'antd';
-import "./toDoStyle.css"
 
 
 
@@ -37,10 +35,10 @@ class ToDo extends Component {
             lastUsedID:"",
 
             loading:false,
-            visible:false,
-
-            visibleEdit:false,
             loadingEdit:false,
+
+            visible:false,
+            visibleEdit:false,
 
         };
 
@@ -49,11 +47,14 @@ class ToDo extends Component {
 
     render() {
         const { todos } = this.state;
+        const {visibleEdit , visible} = this.state
+        const {lastInputWork , lastInputNotes} = this.state
+        const {loading , loadingEdit} = this.state
         return (
             <div>
                 <div id={"modalAddAndBasics"}>
                 <Modal
-                    visible={this.state.visible}
+                    visible={visible}
                     title="Add a new work"
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
@@ -62,18 +63,18 @@ class ToDo extends Component {
                             Return
                         </Button>,
 
-                        <Button key="submit" type="primary" loading={this.state.loading} onClick={this.handleOk}>
+                        <Button key="submit" type="primary" loading={loading} onClick={this.handleOk}>
                             Submit
                         </Button>,
                     ]}
                 >
                     <span>
                         <p>Your work:</p>
-                        <Input placeholder={"Your work"} id={"inputWork"} value={this.state.lastInputWork} onChange={this.submitValue}  />
+                        <Input placeholder={"Your work"} id={"inputWork"} value={lastInputWork} onChange={this.submitValue}  />
                         <br/>
                         <br/>
                         <p>Notes:</p>
-                        <Input placeholder={"Notes (optional)"} id={"inputNotes"} value={this.state.lastInputNotes} onChange={this.submitValue} />
+                        <Input placeholder={"Notes (optional)"} id={"inputNotes"} value={lastInputNotes} onChange={this.submitValue} />
                     </span>
                 </Modal>
 
@@ -90,13 +91,13 @@ class ToDo extends Component {
                     </span>
 
                     { todos.map((todo,index)=>(
-                        <Card title={todo.title} style={{ width: 600}}>
+                        <Card key={index+todo.name} title={todo.title} style={{ width: 600}}>
                         <span>
-                            <Checkbox onChange={(e)=>this.onChecked(e, toxdo.id)}/>
+                            <Checkbox onChange={(e)=>this.onChecked(e, todo.id)}/>
                         </span>
 
                             <span style={{paddingLeft:10,
-                                textDecorationLine: todo.checked === true ? "line-through" : "unset"}}>
+                                textDecorationLine: todo.checked ? "line-through" : "unset"}}>
                                 {todo.info}
                             </span>
 
@@ -119,8 +120,9 @@ class ToDo extends Component {
                 </div>
                 <div id={"modalEdit"}>
                     <Modal
+
                         title="Edit the Work"
-                        visible={this.state.visibleEdit}
+                        visible={visibleEdit}
                         onOk={this.handleOk}
                         onCancel={this.handleCancelEdit}
                         okButtonProps={{ disabled: true }}
@@ -130,7 +132,7 @@ class ToDo extends Component {
                                 Return
                             </Button>,
 
-                            <Button key="submitt" type="primary" loading={this.state.loadingEdit} onClick={this.handleOkEdit}>
+                            <Button key="submitt" type="primary" loading={loadingEdit} onClick={this.handleOkEdit}>
                                 Submit
                             </Button>,
                         ]}
@@ -141,7 +143,7 @@ class ToDo extends Component {
                         <Input
                             placeholder=""
                             id={"inputWork"}
-                            value={this.state.lastInputWork}
+                            value={lastInputWork}
                             onChange={this.submitValue}  />
                         <br/>
                         <br/>
@@ -149,7 +151,7 @@ class ToDo extends Component {
                         <Input
                             placeholder={"Notes (optional)"}
                             id={"inputNotes"}
-                            value={this.state.lastInputNotes}
+                            value={lastInputNotes}
                             onChange={this.submitValue} />
                     </span>
                     </Modal>
@@ -166,8 +168,8 @@ class ToDo extends Component {
     };
 
     handleOkEdit = () => {
-        const {todos, lastId , lastInputWork , lastInputNotes} = this.state
-        const newChanges= this.state.todos.filter((objectt) =>
+        let {todos, lastId , lastInputWork , lastInputNotes} = this.state
+         todos.filter((objectt) =>
             lastId === objectt.id ?
                     (objectt.title=lastInputWork,
                     objectt.info = lastInputNotes)
@@ -187,21 +189,19 @@ class ToDo extends Component {
             lastInputWork:"",
             lastInputNotes:""
         })
-        setTimeout(() => {
-            this.setState({
-                loadingEdit: false,
-                visibleEdit: false
+        this.setState({
+            loadingEdit: false,
+            visibleEdit: false
             });
-        },1000);
 
     }
 
     showModalEdit = (id) => {
-
-        const changes= this.state.todos.filter((objectt) =>
+        let {todos , lastInputWork , lastInputNotes} = this.state
+        todos.filter((objectt) =>
             id === objectt.id ?
-                (this.state.lastInputWork = objectt.title.toString(),
-                this.state.lastInputNotes = objectt.info.toString())
+                (lastInputWork = objectt.title,
+                lastInputNotes = objectt.info)
                 : "")
         this.setState({
             lastId:id,
@@ -216,37 +216,30 @@ class ToDo extends Component {
     }
 
     handleOk = () =>{
-        this.state.todos.push({
-            id: this.state.todos.length + 2,
-            title: this.state.lastInputWork,
-            info: this.state.lastInputNotes,
+        const {todos , lastInputWork , lastInputNotes} = this.state
+        todos.push({
+            id: todos.length + 2,
+            title: lastInputWork,
+            info: lastInputNotes,
             checked: false
 
         })
-        this.setState(this.state.todos)
+        this.setState(todos)
         this.setState({
             loading:true,
             lastInputWork:"",
             lastInputNotes:""
         })
-
-
-
-        setTimeout(() => {
-            this.setState({
-                loading: false,
-                visible: false
+        this.setState({
+            loading: false,
+            visible: false
             });
-        },1000);
 
     }
     handleCancel = () => {
         this.setState({ visible: false });
     };
 
-    createCards = (id,title,info) => {
-
-    };
 
     submitValue = (e) => {
         if (e.target.id==="inputWork")
@@ -275,8 +268,5 @@ class ToDo extends Component {
         this.setState( {todos:newTodos});
     }
 }
-
-ToDo.propTypes = {
-};
 
 export default ToDo;

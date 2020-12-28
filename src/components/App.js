@@ -1,6 +1,6 @@
 
 import './App.css';
-import ToDo from "./toDo.js"
+import ToDo from "./todo.js"
 
 function App() {
   return (
